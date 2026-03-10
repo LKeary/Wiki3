@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Runtime / local data (DB, uploads, logs)
+data/
+
+# Local config (may contain secrets – add to repo only if you use a template)
+# config.yml
+
+# Build outputs
+dist/
+.quasar/
+assets/_assets/
+
+# Env and secrets
+.env
+.env.*
+!.env.sample
+
+# OS and editor
+.DS_Store
+*.log
+*.swp
+*.swo
+
+# E2E / test
+e2e/playwright-report/
+e2e/test-results/
+e2e/.cache/
+
+# pnpm
+.pnpm-store/
