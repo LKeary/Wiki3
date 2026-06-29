@@ -172,8 +172,7 @@ export default {
       }
 
       // Check for unsafe regex page rules
-      const pageRules = args.rules ?? args.pageRules ?? []
-      if (_.some(pageRules, pr => {
+      if (_.some(args.pageRules, pr => {
         return pr.match === 'REGEX' && !safeRegex(pr.path)
       })) {
         throw new Error('Some Page Rules contains unsafe or exponential time regex.')
@@ -208,7 +207,7 @@ export default {
         name: args.name,
         redirectOnLogin: args.redirectOnLogin,
         permissions: JSON.stringify(args.permissions),
-        pageRules: JSON.stringify(pageRules)
+        pageRules: JSON.stringify(args.pageRules)
       }).where('id', args.id)
 
       // Revoke tokens for this group

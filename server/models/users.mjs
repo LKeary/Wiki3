@@ -125,20 +125,9 @@ export class User extends Model {
     })
   }
 
-  static async processProfile({ profile, providerKey, externalGroups = [], groupMapping = {} }) {
+  static async processProfile({ profile, providerKey }) {
     const provider = get(WIKI.auth.strategies, providerKey, {})
     provider.info = find(WIKI.data.authentication, ['key', provider.stategyKey])
-
-    // Resolve external group IDs to wiki group IDs when mapping is provided
-    const mapExternalGroupsToWiki = () => {
-      if (!externalGroups?.length || !groupMapping || typeof groupMapping !== 'object') return []
-      const mapping = typeof groupMapping === 'string'
-        ? (() => { try { return JSON.parse(groupMapping) } catch { return {} } })()
-        : groupMapping
-      const externalIds = externalGroups.map(g => toString(g))
-      return uniq(externalIds.map(eid => mapping[eid]).filter(Boolean))
-    }
-    const targetWikiGroupIds = mapExternalGroupsToWiki()
 
     // Find existing user
     let user = await WIKI.db.users.query().findOne({
@@ -218,15 +207,6 @@ export class User extends Model {
         await WIKI.db.users.updateUserAvatarData(user.id, profile.picture)
       }
 
-      const hasGroupMapping = groupMapping &&
-        (typeof groupMapping === 'string' ? String(groupMapping).trim().length > 0 : Object.keys(groupMapping).length > 0)
-      if (hasGroupMapping || targetWikiGroupIds.length > 0) {
-        await user.$relatedQuery('groups').unrelate()
-        if (targetWikiGroupIds.length > 0) {
-          await user.$relatedQuery('groups').relate(targetWikiGroupIds)
-        }
-      }
-
       return user
     }
 
@@ -256,9 +236,7 @@ export class User extends Model {
       })
 
       // Assign to group(s)
-      if (targetWikiGroupIds.length > 0) {
-        await user.$relatedQuery('groups').relate(targetWikiGroupIds)
-      } else if (provider.autoEnrollGroups?.length > 0) {
+      if (provider.autoEnrollGroups.length > 0) {
         await user.$relatedQuery('groups').relate(provider.autoEnrollGroups)
       }
 

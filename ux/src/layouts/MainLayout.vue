@@ -2,11 +2,10 @@
 q-layout(view='hHh Lpr lff')
   header-nav
   q-drawer.bg-sidebar(
-    v-model='drawerOpen'
+    :model-value='isSidebarShown'
+    :show-if-above='siteStore.theme.sidebarPosition !== `off`'
     :width='isSidebarMini ? 56 : 255'
     :side='siteStore.theme.sidebarPosition === `right` ? `right` : `left`'
-    :breakpoint='600'
-    bordered
     )
     .sidebar-mini.column.items-stretch(v-if='isSidebarMini')
       q-btn.q-py-md(
@@ -22,7 +21,7 @@ q-layout(view='hHh Lpr lff')
         icon='las la-sitemap'
         color='white'
         aria-label='Browse'
-        @click='openBrowseDialog'
+        @click='notImplemented'
         )
         q-tooltip(anchor='center right' self='center left') Browse
       q-separator.q-my-sm(inset, dark)
@@ -75,7 +74,7 @@ q-layout(view='hHh Lpr lff')
           label='Browse'
           aria-label='Browse'
           size='sm'
-          @click='openBrowseDialog'
+          @click='notImplemented'
           )
       nav-sidebar
       q-bar.sidebar-footerbtns.text-white(
@@ -142,7 +141,6 @@ import LocaleSelectorMenu from '@/components/LocaleSelectorMenu.vue'
 import NavSidebar from '@/components/NavSidebar.vue'
 import NavEditMenu from '@/components/NavEditMenu.vue'
 import MainOverlayDialog from '@/components/MainOverlayDialog.vue'
-import TreeBrowserDialog from '@/components/TreeBrowserDialog.vue'
 
 // QUASAR
 
@@ -172,11 +170,6 @@ useMeta({
   titleTemplate: title => `${title} - ${siteStore.title}`
 })
 
-// Close mobile sidebar when route changes
-watch(() => route.path, () => {
-  if ($q.screen.lt.sm) siteStore.mobileSidebarOpen = false
-})
-
 // REFS
 
 const navEditMenu = ref(null)
@@ -192,31 +185,7 @@ const isSidebarMini = computed(() => {
   return ['hide', 'hideExact'].includes(pageStore.navigationMode) || !pageStore.navigationId
 })
 
-const drawerOpen = computed({
-  get () {
-    if (siteStore.sideNavIsDisabled) return false
-    if ($q.screen.lt.sm) return siteStore.mobileSidebarOpen
-    return isSidebarShown.value
-  },
-  set (v) {
-    if ($q.screen.lt.sm) siteStore.mobileSidebarOpen = v
-    else siteStore.showSideNav = v
-  }
-})
-
 // METHODS
-
-function openBrowseDialog () {
-  $q.dialog({
-    component: TreeBrowserDialog,
-    componentProps: { mode: 'browse' }
-  }).onOk((payload) => {
-    if (payload?.path != null) {
-      const path = String(payload.path).replace(/^\//, '')
-      router.push(path ? `/${path}` : '/')
-    }
-  })
-}
 
 function notImplemented () {
   $q.notify({
