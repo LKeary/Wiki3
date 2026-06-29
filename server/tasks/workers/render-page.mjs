@@ -34,28 +34,21 @@ export async function task ({ payload }) {
         output = await render(output, site.config?.editors?.markdown?.config ?? {})
         break
       }
-      case 'html': {
-        // WYSIWYG/visual editor: content is already HTML from the client
-        output = page.content
-        break
-      }
     }
 
     // Render HTML
     await WIKI.db.renderers.fetchDefinitions()
     const pipeline = await WIKI.db.renderers.getRenderingPipeline(page.contentType)
 
-    if (Array.isArray(pipeline)) {
-      for (const core of pipeline) {
-        const { render } = (await import(`../../modules/rendering/${core.key}/renderer.mjs`))
-        output = await render.call({
-          config: core.config,
-          children: core.children,
-          page,
-          site,
-          input: output
-        })
-      }
+    for (const core of pipeline) {
+      const { render } = (await import(`../../modules/rendering/${core.key}/renderer.mjs`))
+      output = await render.call({
+        config: core.config,
+        children: core.children,
+        page,
+        site,
+        input: output
+      })
     }
 
     // Parse TOC

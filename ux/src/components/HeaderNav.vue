@@ -2,21 +2,11 @@
 q-header.bg-header.text-white.site-header(
   height-hint='64'
   )
-  .row.no-wrap.items-center
-    q-toolbar.site-header-toolbar(
-      style='height: 64px; min-height: 64px;'
+  .row.no-wrap
+    q-toolbar(
+      style='height: 64px;'
       dark
       )
-      q-btn.q-mr-xs.lt-sm(
-        v-if='siteStore.theme.sidebarPosition !== `off`'
-        dense
-        flat
-        round
-        icon='las la-bars'
-        :aria-label='t(`common.actions.menu`, `Menu`)'
-        @click='siteStore.toggleMobileSidebar()'
-        )
-        q-tooltip {{ t('common.actions.menu', 'Menu') }}
       q-btn(
         dense
         flat
@@ -33,10 +23,10 @@ q-header.bg-header.text-white.site-header(
           :src='`/_site/logo`'
           style='height: 34px'
           )
-      q-toolbar-title.text-h6.text-no-wrap.ellipsis(v-if='siteStore.logoText') {{ siteStore.title }}
-    header-search.header-search
-    q-toolbar.site-header-toolbar.header-actions(
-      style='height: 64px; min-height: 64px;'
+      q-toolbar-title.text-h6(v-if='siteStore.logoText') {{siteStore.title}}
+    header-search
+    q-toolbar(
+      style='height: 64px;'
       dark
       )
       q-space
@@ -46,7 +36,7 @@ q-header.bg-header.text-white.site-header(
           color='accent'
           size='24px'
         )
-      q-btn.q-ml-sm(
+      q-btn.q-ml-md(
         v-if='userStore.can(`write:pages`)'
         flat
         round
@@ -57,7 +47,7 @@ q-header.bg-header.text-white.site-header(
         )
         q-tooltip Create New Page
         new-menu
-      q-btn.q-ml-sm(
+      q-btn.q-ml-md(
         v-if='userStore.can(`browse:fileman`)'
         flat
         round
@@ -68,7 +58,7 @@ q-header.bg-header.text-white.site-header(
         @click='openFileManager'
         )
         q-tooltip File Manager
-      q-btn.q-ml-sm(
+      q-btn.q-ml-md(
         v-if='userStore.can(`access:admin`)'
         flat
         round
@@ -82,7 +72,7 @@ q-header.bg-header.text-white.site-header(
 
       //- USER BUTTON / DROPDOWN
       account-menu(v-if='userStore.authenticated')
-      q-btn.q-ml-sm(
+      q-btn.q-ml-md(
         v-else
         flat
         rounded
@@ -93,18 +83,6 @@ q-header.bg-header.text-white.site-header(
         to='/login'
         padding='sm'
         no-caps
-        class='gt-xs'
-      )
-      q-btn.q-ml-sm(
-        v-else
-        flat
-        round
-        dense
-        icon='las la-sign-in-alt'
-        color='white'
-        :aria-label='$t(`common.actions.login`)'
-        to='/login'
-        class='lt-sm'
       )
 </template>
 
@@ -147,27 +125,3 @@ function openFileManager () {
   siteStore.openFileManager()
 }
 </script>
-
-<style lang="scss" scoped>
-.site-header {
-  .row {
-    min-width: 0;
-  }
-  .site-header-toolbar {
-    min-width: 0;
-    flex: 0 1 auto;
-  }
-  .header-search {
-    flex: 1 1  auto;
-    min-width: 0;
-    max-width: 280px;
-    @media (min-width: 600px) {
-      max-width: 360px;
-    }
-  }
-  .header-actions {
-    flex: 0 0 auto;
-    min-width: 0;
-  }
-}
-</style>

@@ -681,63 +681,7 @@ function init () {
 
   // -> Initialize TipTap
   editor = useEditor({
-    content: (() => {
-      const c = pageStore.content
-      if (!c || !c.trim()) return '<p></p>'
-      if (c.trimStart().startsWith('<')) return c
-      if (c.trimStart().startsWith('{')) return JSON.parse(c)
-      return `<p>${c}</p>`
-    })(),
-    editorProps: {
-      handlePaste: (view, event) => {
-        const items = Array.from(event.clipboardData?.items || [])
-        const imageItems = items.filter(item => item.type.indexOf('image') === 0)
-        if (imageItems.length === 0) return false
-        event.preventDefault()
-        const insertNext = (idx) => {
-          if (idx >= imageItems.length || !editor.value) return
-          const file = imageItems[idx].getAsFile()
-          if (!file) {
-            insertNext(idx + 1)
-            return
-          }
-          const reader = new FileReader()
-          reader.onload = () => {
-            const src = reader.result
-            if (src && editor.value) {
-              editor.value.chain().focus().setImage({ src }).run()
-            }
-            insertNext(idx + 1)
-          }
-          reader.readAsDataURL(file)
-        }
-        insertNext(0)
-        return true
-      },
-      handleDrop: (view, event) => {
-        const files = event.dataTransfer?.files
-        if (!files?.length) return false
-        const imageFiles = Array.from(files).filter(f => f.type.indexOf('image') === 0)
-        if (imageFiles.length === 0) return false
-        event.preventDefault()
-        imageFiles.forEach(file => {
-          const reader = new FileReader()
-          reader.onload = () => {
-            const src = reader.result
-            if (src && editor.value) {
-              const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-              if (coordinates) {
-                editor.value.chain().focus().insertContentAt(coordinates.pos, { type: 'image', attrs: { src } }).run()
-              } else {
-                editor.value.chain().focus().setImage({ src }).run()
-              }
-            }
-          }
-          reader.readAsDataURL(file)
-        })
-        return true
-      }
-    },
+    content: pageStore.content && pageStore.content.startsWith('{') ? JSON.parse(pageStore.content) : `<p>${pageStore.content}</p>`,
     extensions: [
       StarterKit.configure({
         codeBlock: false,
@@ -780,7 +724,7 @@ function init () {
         lastChangeTimestamp: DateTime.utc()
       })
       pageStore.$patch({
-        content: editor.getHTML(),
+        content: JSON.stringify(editor.getJSON()),
         render: editor.getHTML()
       })
     }
