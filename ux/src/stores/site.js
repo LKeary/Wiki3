@@ -22,7 +22,6 @@ export const useSiteStore = defineStore('site', {
     pageDataTemplates: [],
     showSideNav: true,
     showSidebar: true,
-    mobileSidebarOpen: false,
     overlay: null,
     overlayOpts: {},
     features: {
@@ -109,9 +108,6 @@ export const useSiteStore = defineStore('site', {
           insertMode: opts?.insertMode ?? false
         }
       })
-    },
-    toggleMobileSidebar () {
-      this.mobileSidebarOpen = !this.mobileSidebarOpen
     },
     async loadSite (hostname) {
       try {

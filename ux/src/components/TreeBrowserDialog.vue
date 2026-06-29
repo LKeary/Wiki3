@@ -10,9 +10,6 @@ q-dialog(ref='dialogRef', @hide='onDialogHide')
     q-card-section.card-header(v-else-if='props.mode === `renamePage`')
       q-icon(name='img:/_assets/icons/fluent-rename.svg', left, size='sm')
       span {{ t('pageRenameDialog.title') }}
-    q-card-section.card-header(v-else-if='props.mode === `browse`')
-      q-icon(name='las la-sitemap', left, size='sm')
-      span {{ t('common.browsePages', 'Browse pages') }}
     .row.page-save-dialog-browser
       .col-4
         q-scroll-area(
@@ -28,7 +25,7 @@ q-dialog(ref='dialogRef', @hide='onDialogHide')
               @lazy-load='treeLazyLoad'
               :use-lazy-load='true'
               @context-action='treeContextAction'
-              :context-action-list='props.mode === `browse` ? [] : [`newFolder`]'
+              :context-action-list='[`newFolder`]'
               :display-mode='state.displayMode'
             )
       .col-8
@@ -40,14 +37,13 @@ q-dialog(ref='dialogRef', @hide='onDialogHide')
             active-class='active'
             :active='item.id === state.currentFileId'
             @click='selectItem(item)'
-            @dblclick='handleFileItemDblclick(item)'
             )
             q-item-section(side)
               q-icon(:name='item.icon', size='sm')
             q-item-section
               q-item-label {{item.title}}
     .page-save-dialog-path.font-robotomono {{ currentFolderPath }}
-    q-list.q-py-sm(v-if='props.mode !== `browse`')
+    q-list.q-py-sm
       q-item
         blueprint-icon(icon='new-document')
         q-item-section
@@ -73,7 +69,6 @@ q-dialog(ref='dialogRef', @hide='onDialogHide')
             //-   q-badge(outline, color='grey', label='valid')
     q-card-actions.card-actions.q-px-md
       q-btn.acrylic-btn(
-        v-if='props.mode !== `browse`'
         icon='las la-ellipsis-h'
         color='blue-grey'
         padding='xs sm'
@@ -106,43 +101,23 @@ q-dialog(ref='dialogRef', @hide='onDialogHide')
                     )
                 q-item-section.q-pr-sm {{ t('pageSaveDialog.displayModeTitle') }}
       q-space
-      template(v-if='props.mode === `browse`')
-        q-btn.acrylic-btn(
-          icon='las la-external-link-alt'
-          :label='t(`common.actions.go`, `Go to page`)'
-          unelevated
-          color='primary'
-          padding='xs md'
-          :disable='!state.currentFileId'
-          @click='goToSelectedPage'
-          v-close-popup
-          )
-        q-btn.acrylic-btn(
-          icon='las la-times'
-          :label='t(`common.actions.cancel`)'
-          color='grey-7'
-          padding='xs md'
-          @click='onDialogCancel'
-          flat
-          )
-      template(v-else)
-        q-btn.acrylic-btn(
-          icon='las la-times'
-          :label='t(`common.actions.cancel`)'
-          color='grey-7'
-          padding='xs md'
-          @click='onDialogCancel'
-          flat
-        )
-        q-btn(
-          icon='las la-check'
-          :label='t(`common.actions.save`)'
-          unelevated
-          color='primary'
-          padding='xs md'
-          @click='save'
-          v-close-popup
-        )
+      q-btn.acrylic-btn(
+        icon='las la-times'
+        :label='t(`common.actions.cancel`)'
+        color='grey-7'
+        padding='xs md'
+        @click='onDialogCancel'
+        flat
+      )
+      q-btn(
+        icon='las la-check'
+        :label='t(`common.actions.save`)'
+        unelevated
+        color='primary'
+        padding='xs md'
+        @click='save'
+        v-close-popup
+      )
 </template>
 
 <script setup>
@@ -224,8 +199,7 @@ const state = reactive({
   title: '',
   path: '',
   typesToFetch: [],
-  pathDirty: false,
-  selectedPagePath: ''
+  pathDirty: false
 })
 
 const thumbStyle = {
@@ -280,15 +254,9 @@ watch(() => state.title, (newValue) => {
 // METHODS
 
 async function save () {
-  const folderNode = state.currentFolderId ? (state.treeNodes[state.currentFolderId] ?? {}) : {}
-  const prefix = folderNode.folderPath != null && folderNode.fileName
-    ? (folderNode.folderPath ? `${folderNode.folderPath}/${folderNode.fileName}` : folderNode.fileName) + '/'
-    : ''
-  let path = (prefix + state.path).replace(/\/+/g, '/').replace(/^\//, '').replace(/\/$/, '').trim()
-  path = path.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-_/]/g, '').toLowerCase() || 'new-page'
   onDialogOK({
     title: state.title,
-    path
+    path: currentFolderPath.value.length > 1 ? `${currentFolderPath.value.substring(1)}${state.path}` : state.path
   })
 }
 
@@ -303,8 +271,6 @@ async function treeLazyLoad (nodeId, isCurrent, { done, fail }) {
 async function loadTree ({ parentId = null, parentPath = null, types, initLoad = false }) {
   try {
     state.fileList = []
-    state.currentFileId = null
-    state.selectedPagePath = ''
     const resp = await APOLLO_CLIENT.query({
       query: gql`
         query loadTree (
@@ -420,7 +386,6 @@ function selectItem (item) {
   state.currentFileId = item.id
   state.title = item.title
   state.path = item.fileName
-  state.selectedPagePath = item.folderPath ? `${item.folderPath}/${item.fileName}` : item.fileName
 }
 
 function newFolder (parentId) {
@@ -432,17 +397,6 @@ function newFolder (parentId) {
   }).onOk(() => {
     loadTree({ parentId })
   })
-}
-
-function goToSelectedPage () {
-  if (!state.currentFileId || !state.selectedPagePath) return
-  onDialogOK({ path: state.selectedPagePath })
-}
-
-function handleFileItemDblclick (item) {
-  if (props.mode !== 'browse' || item.type !== 'page') return
-  selectItem(item)
-  goToSelectedPage()
 }
 
 // MOUNTED
@@ -467,10 +421,6 @@ onMounted(() => {
     case 'renamePage': {
       state.typesToFetch = ['folder', 'page']
       state.pathDirty = true
-      break
-    }
-    case 'browse': {
-      state.typesToFetch = ['folder', 'page']
       break
     }
   }

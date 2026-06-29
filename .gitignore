@@ -1,32 +1,48 @@
-# Dependencies
-node_modules/
-
-# Runtime / local data (DB, uploads, logs)
-data/
-
-# Local config (may contain secrets – add to repo only if you use a template)
-# config.yml
-
-# Build outputs
-dist/
-.quasar/
-assets/_assets/
-
-# Env and secrets
-.env
-.env.*
-!.env.sample
-
-# OS and editor
-.DS_Store
+# Logs
+logs
 *.log
-*.swp
-*.swo
+/logs
 
-# E2E / test
-e2e/playwright-report/
-e2e/test-results/
-e2e/.cache/
+# Deployment builds
+dist
 
-# pnpm
-.pnpm-store/
+# Dependency directories
+node_modules
+npm/node_modules
+
+# NPM / Yarn
+.npm
+.node_repl_history
+npm-debug.log*
+/.yarn
+/.pnpm-store
+
+# Generated assets
+/assets
+
+# Config Files
+/config.yml
+/localazy.keys.json
+
+# Data directories
+/repo
+/data
+/uploads
+/content
+/temp
+/tmp
+*.sqlite
+
+# IDE exclude
+.idea
+*.sublime-*
+
+# Test results
+test-results/
+.scannerwork
+
+# Localization Resources
+/server/locales/*.json
+!/server/locales/en.json
+
+cloudflared.deb

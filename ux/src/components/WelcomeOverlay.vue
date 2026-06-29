@@ -23,7 +23,7 @@
             q-item(
               clickable
               @click='createHomePage(`wysiwyg`)'
-              v-if='siteStore.editors.wysiwyg'
+              v-if='flagsStore.experimental && siteStore.editors.wysiwyg'
               )
               blueprint-icon(icon='google-presentation')
               q-item-section.q-pr-sm Using the Visual Editor
